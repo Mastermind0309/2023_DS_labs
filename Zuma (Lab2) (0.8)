@@ -1,0 +1,191 @@
+#include <iostream>
+using namespace std;
+
+class Node {
+public:
+    char color;
+    Node* front;
+    Node* back;
+    Node(): color('0'), front(NULL), back(NULL) {}
+    ~Node() {}
+};
+
+void show(Node* head) {
+    int num=1;
+    Node* now=head;
+    while (now->back != NULL) {
+        cout << now->color << " ";
+        now = now->back;
+        num++;
+    }
+    cout << now->color << '\n';
+    cout << num << '\n';
+    return;
+}
+
+Node* create(Node* head, char in_color) {
+    Node* newnode = new Node();
+    newnode->color = in_color;
+    newnode->front = NULL;
+    newnode->back = NULL;
+    if (head == NULL) {
+        head = newnode;
+    }
+    else {
+        Node* now = head;
+        while (now->back != NULL) {
+            now = now->back;
+        }
+        now->back = newnode;
+        newnode->front = now;
+    }
+    return head;
+}
+
+Node* shoot(Node* head, int n, int shoot_order, char shoot_color) {
+    Node* cur = head;
+    while (shoot_order - 1 > 0 && cur->back !=NULL) {
+        shoot_order--;
+        cur = cur->back;
+    }
+    Node* newnode = new Node();
+    newnode->color = shoot_color;
+    if (cur->back != NULL) {
+        newnode->back = cur->back;
+        cur->back->front = newnode;
+        newnode->front = cur;
+        cur->back = newnode;
+        cur = cur->back;
+    }
+    else {
+        cur->back = newnode;
+        newnode->front = cur;
+    }
+    return cur;
+}
+
+Node* addfront(Node* head, Node* str_head, Node* str_tail) {
+    str_tail->back = head;
+    head->front = str_tail;
+    head = str_head;
+    return head;
+}
+
+Node* addback(Node* head, Node* str_head, Node* str_tail) {
+    Node* now = head;
+    while (now->back != NULL) {
+        now = now->back;
+    }
+    now->back = str_head;
+    str_head->front = now;
+    str_tail->back = NULL;
+    now = head;
+    while (now->back != NULL) {
+        now = now->back;
+    }
+    return head;
+}
+
+Node* reverse(Node* head) {
+    Node* now = head;
+    now->front = now->back;
+    now->back = NULL;
+    now = now->front;
+    while (now->back != NULL) {
+        Node* tmp = now->front;
+        now->front = now->back;
+        now->back = tmp;
+        now = now->front;
+    }
+    now->back = now->front;
+    now->front = NULL;
+    head = now;
+    return head;
+} 
+
+Node* doubleadd(Node* head, Node* str_head, Node* str_tail) {
+    Node* now = str_head;
+    while (now != str_tail) {
+        head = create(head, now->color);
+        now = now->back;
+    }
+    head = create(head, now->color);
+    return head;
+}
+
+Node* find_strhead(Node* head, Node* str_head_front) {
+    Node* now = str_head_front;
+    while (now->front != NULL) {
+        if (now->color == str_head_front->color) {
+            now = now->front;
+        }
+        else if (now->color != str_head_front->color) {
+            now = now->back;
+            break;
+        }
+    }
+    return now;
+}
+
+Node* find_strtail(Node* head, Node* str_tail_back) {
+    Node* now = str_tail_back;
+    while (now->back != NULL) {
+        if (now->color == str_tail_back->color) {
+            now = now->back;
+        }
+        if (now->color != str_tail_back->color) {
+            now = now->front;
+            break;
+        }
+    }
+    return now;
+}
+
+int main() {
+    Node* head = NULL;
+    Node* cur = NULL;
+    Node* str_head = NULL;
+    Node* str_tail = NULL;
+    char in_color, shoot_color;
+    int n, shoot_order;
+    cin >> n;
+    cin >> shoot_order >> shoot_color;
+    for (int i = 1; i <= n; i++) {
+        cin >> in_color;
+        head = create(head, in_color);
+    }
+    //    show(head);
+    cur = shoot(head, n, shoot_order, shoot_color);
+    //    cout << cur->color << '\n';
+    //    show(head);
+    Node* str_head_front = cur;
+    Node* str_tail_back = cur;
+    do {
+        str_head = find_strhead(head, str_head_front);
+        str_tail = find_strtail(head, str_tail_back);
+        if (str_head->back == str_tail) break;
+//       cout << str_head->color << " " << str_tail->color << '\n';
+//       cout << str_head->front->color << " " << str_tail->back->color << '\n';
+        str_head_front = str_head->front;
+        str_tail_back = str_tail->back;
+        str_head->front->back = str_tail->back;
+        str_tail->back->front = str_head->front;
+        //       show(head);
+        if (str_head->color == 'G') {
+            head = addback(head, str_head, str_tail);
+            head = doubleadd(head, str_head, str_tail);
+        }
+        else if (str_head->color == 'B') {
+            head = addfront(head, str_head, str_tail);
+            head = reverse(head);
+        }
+        else if (str_head->color == 'R') {
+
+        }
+//       show(head); 
+//       cout << str_head_front->color << " " << str_tail_back->color<<'\n';
+        if (str_head_front == NULL || str_tail_back == NULL) break;
+    } while (str_head_front->color == str_tail_back->color);
+    show(head);
+    return 0;
+} 
