@@ -1,0 +1,112 @@
+#include<iostream>
+#include<string.h>
+using namespace std;
+
+
+struct Node{
+    int kind=0;
+    int val=0;
+    Node* left=NULL;
+    Node* right=NULL;
+};
+
+void heart_val(Node* root, int& sum) {
+    if (root != NULL) {
+        sum+=root->val;
+        heart_val(root->left, sum);
+        heart_val(root->right, sum);
+    }
+}
+
+void sum_heart(Node* root, int& sum) {
+    if (root != NULL) {
+        if (root->kind==1) {
+            sum+=root->val;
+        }
+        sum_heart(root->left, sum);
+        sum_heart(root->right, sum);
+    }
+}
+
+
+Node* build_tree(Node* root, string str) {
+    Node* newnode=new Node();
+    if (str == "Clubs") {
+        if (root->left == NULL && root->right == NULL) {
+            newnode->val=1;
+            root->left=newnode;
+            return root;
+        }
+        else if (root->left == NULL && root->right != NULL) {
+            newnode->val=1;
+            root->left=newnode;
+            return root;
+        }
+        else if (root->left != NULL && root->right == NULL) {
+            newnode->val=1;
+            root->right=newnode;
+            return root;
+        }
+        else return root;
+    }
+    else if (str == "Diamond") {
+        if (root->left != NULL && root->right == NULL) {
+            newnode->left=root->left;
+            newnode->val=3;
+            root->left=newnode;
+            return root;
+        }
+        else if (root->left == NULL && root->right != NULL) {
+            newnode->right=root->right;
+            newnode->val=3;
+            root->right=newnode;
+            return root;
+        }
+        else if (root->left != NULL && root->right != NULL) {
+            if (root->left->val <= root->right->val) {
+                newnode->left=root->left;
+                newnode->val=3;
+                root->left=newnode;
+                return root;
+            }
+            else {
+                newnode->right=root->right;
+                newnode->val=3;
+                root->right=newnode;
+                return root;
+            }
+        }
+        else return root;
+
+    }
+    else if (str == "Heart") {
+        if (root->left != NULL && root->right != NULL) {
+            newnode->left=root->left;
+            newnode->right=root->right;
+            newnode->kind=1;
+
+            int left=0, right=0;
+            heart_val(root->left, left);
+            heart_val(root->right, right);
+            newnode->val=left-right;
+            root->left=newnode;
+            root->right=NULL;
+            return root;
+        }
+        else return root;
+    }
+    return root;
+ }
+
+int main() {
+    string str;
+    Node* root = new Node();
+    while(cin>>str) {
+        if (str=="Spade") break;
+        root=build_tree(root, str);
+    }
+    int sum=0;
+    sum_heart(root, sum);
+    cout<<sum<<'\n';
+    return 0;
+}
