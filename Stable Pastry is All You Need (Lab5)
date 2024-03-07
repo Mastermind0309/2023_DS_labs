@@ -1,0 +1,66 @@
+#include <iostream>
+#include <algorithm>
+#include <string.h>
+#include <vector>
+using namespace std;
+
+struct food{
+    string name;
+//    vector<int> pos_id;
+    int diff;
+};
+
+struct point{
+    int init_id;
+    int p;
+};
+
+bool cmp(point a, point b) {
+    return a.p<b.p;
+}
+
+bool cmp_diff(food a, food b) {
+    return a.diff<b.diff;
+}
+
+int main() {
+    int mon, num;
+    cin>>mon>>num;
+
+    vector<food> snack(num);
+    for(int i=0;i<num;i++) {
+        cin>>snack[i].name;
+    }
+
+    vector<point> price(num);
+    vector<vector<int> > pos(num, vector<int>(mon,0));
+    for (int i=0;i<mon;i++) {
+        for (int j=0;j<num;j++) {
+            price[j].init_id=j;
+            cin>>price[j].p;
+        }
+
+        stable_sort(price.begin(), price.end(), cmp);
+        for (int k=0; k<num;k++) {
+            pos[price[k].init_id][i]=k;
+        }
+    }
+
+/*    for (int i=0;i<num;i++) {
+        for (int j=0;j<mon;j++) {
+            cout<<pos[i][j]<<" ";
+        }
+        cout<<'\n';
+    } */
+
+    for (int i=0;i<num;i++) {
+        int d=0;
+        for (int j=1;j<mon;j++) {
+           d+=abs(pos[i][j]-pos[i][j-1]);
+        }
+        snack[i].diff=d;
+    }
+    stable_sort(snack.begin(), snack.end(), cmp_diff);
+    cout<<snack[0].name<<'\n';
+    return 0;
+}
