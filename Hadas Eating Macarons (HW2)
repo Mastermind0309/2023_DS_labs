@@ -1,0 +1,237 @@
+#include <iostream>
+using namespace std;
+
+class Node {
+    friend class CClist;
+public:
+    Node() : ord(0), mar(0), next(NULL) {}
+    Node(int order, int m) : ord(order), mar(m), next(NULL) {}
+    ~Node() {}
+    int ord;
+    int mar;
+    Node* next;
+};
+
+class CClist {
+public:
+    CClist() {}
+    ~CClist() {}
+    void show(Node* cur);
+    Node* create(Node* cur, int order, int m);
+    Node* delete_all(Node* cur);
+    Node* find_tar(Node* cur, int target_ord);
+    Node* remove(Node* cur);
+    int count_dist(Node* start, Node* tmp);
+    int multi(Node* cur, int tar_ord, int tar_mar);
+    int find_tar_ord(Node* cur);
+    Node* eat_tar(Node* tar);
+    Node* reverse(Node* rm_first);
+    Node* insert(Node* tar, Node* rm_first);
+};
+
+void CClist::show(Node* cur) {
+    if (cur == NULL) {
+        cout << "empty list!" << '\n';
+        return;
+    }
+    cout << cur->ord << " / " << cur->mar << '\n';
+    Node* now = cur->next;
+    while (now != cur) {
+        cout << now->ord << " / " << now->mar << '\n';
+        now = now->next;
+    }
+    return;
+}
+
+// addback, cur is last
+Node* CClist::create(Node* cur, int order, int m) { 
+    Node* newnode = new Node(order, m);
+    newnode->next = newnode;
+    if (cur == NULL) {
+        cur = newnode;
+        return cur;
+    }
+    else {
+        newnode->next=cur->next;
+        cur->next = newnode;
+        cur = newnode;
+        return cur;
+    }
+}
+
+// all operaton done, delete all linked list
+Node* CClist::delete_all(Node* cur) {
+    if (cur == NULL) {
+        cout << "delete all" << '\n';
+        return cur;
+    }
+    Node* now = cur->next;
+    while (now != cur) {     // delete until remain cur
+        Node* nextnode = now->next;
+        delete now;
+        now = nextnode;
+    }
+    delete now;
+    cur = NULL;
+    return cur;
+}
+
+// find target node position and return 
+Node* CClist::find_tar(Node* cur, int target_ord) {
+    while (cur->ord != target_ord) {
+        cur = cur->next;
+    }
+    return cur;
+}
+
+// skip three node after cur
+Node* CClist::remove(Node* cur) {
+    cur->next = cur->next->next->next->next;
+    return cur;
+}
+
+int CClist::count_dist(Node* start, Node* tmp) {
+    Node* now = start->next;
+    int dist = 1;
+    while (now != start && now != tmp) {
+        now = now->next;
+        dist++;
+    }
+    return dist;
+}
+
+int CClist::multi(Node* cur, int tar_ord, int tar_mar) {
+    int cnt = 0;
+    Node* now = cur->next;
+    while (now != cur) {
+        if (now->mar == tar_mar) {
+            cnt++;
+        }
+        now = now->next;
+    }
+    if (cnt == 1) return tar_ord;
+    else {
+        int dist = 0;
+        bool ctr = false;
+        int min_dist = 100;
+        bool min_ctr = false;
+        now = cur->next;
+        while (now != cur) {
+            if (now->mar == tar_mar) {
+                dist = count_dist(cur, now);
+                if (dist >= 4) {    // counter dist is less
+                    dist = 7 - dist;
+                    ctr = true;
+                }
+                if (dist < min_dist) {
+                    min_dist = dist;
+                    min_ctr = ctr;
+                }
+            }
+            now = now->next;
+        }
+        if (min_ctr == true) min_dist = 7 - min_dist;
+ //       cout << min_dist << '\n';
+        now = cur;
+        while (min_dist--) {
+            now = now->next;
+        }
+        tar_ord = now->ord;
+        return tar_ord;
+    }
+}
+
+int CClist::find_tar_ord(Node* cur) {
+    Node* now = cur->next;
+    int tar_ord = 0;
+    int tar_mar = 0;
+    int less_min = 1000000;
+    int max_mar = -1000000;
+    int max_ord = 0;
+    while (now != cur) {
+        if (now->mar < cur->mar) {
+            if (cur->mar - now->mar < less_min) {
+                less_min = cur->mar - now->mar;
+                tar_ord = now->ord;
+                tar_mar = now->mar;
+            }
+        }
+        if (now->mar > max_mar) {
+            max_mar = now->mar;
+            max_ord = now->ord;
+        }
+        now = now->next;
+    }
+    if (less_min == 1000000) { // cur is min, tar is max
+        tar_ord = max_ord;
+        tar_mar = max_mar;
+    }
+ //   cout << less_min << "/" << max_mar << '\n';
+    return multi(cur, tar_ord, tar_mar);
+}
+
+Node* CClist::eat_tar(Node* tar) {
+    if (tar->mar < tar->ord) tar->mar += 50;
+    tar->mar -= tar->ord;
+    return tar;
+}
+
+Node* CClist::reverse(Node* rm_first) {
+    Node* prev = rm_first;
+    Node* now = rm_first->next;
+    Node* prec = rm_first->next->next;
+    now->next = prev;
+    prec->next = now;
+    prev->next = prec;
+    rm_first = prec;
+    return rm_first;
+}
+
+Node* CClist::insert(Node* tar, Node* rm_first) {
+    rm_first->next->next->next = tar->next;
+    tar->next = rm_first;
+    return tar;
+}
+
+int main() {
+    CClist L;
+    int num;
+    int tar_order = 0;
+    Node* main_cur = NULL;
+    Node* main_rm = NULL;
+    Node* main_tar = NULL;
+    for (int i = 1; i <= 10; i++) {
+        cin >> num;
+        main_cur = L.create(main_cur, i, num);
+    }
+//   L.show(main_last->next);
+//   cout << '\n';
+    for (int i = 1; i <= 100; i++) {
+        main_cur = L.find_tar(main_cur, tar_order%10 + 1);
+        main_rm = main_cur->next;
+        main_cur = L.remove(main_cur);
+        //L.show(main_cur);
+        //cout << '\n';
+        main_rm->next->next->next = main_rm;    // make tmp remove circularLL
+        //   L.show(rm_first);
+        //   cout << '\n';
+        tar_order = L.find_tar_ord(main_cur);
+        main_tar = L.find_tar(main_cur, tar_order);
+        //cout << main_tar->ord << ": " << main_tar->mar << '\n';
+        main_tar = L.eat_tar(main_tar);
+        //    cout << main_tar->ord << ": " << main_tar->mar << '\n';
+        //    cout << '\n';
+        main_rm = L.reverse(main_rm);   // reverse tmp removed ciruclarLL
+        //    L.show(rm_first);
+        //    cout << '\n';
+        main_tar = L.insert(main_tar, main_rm); // put tmp reversed circularLL after tar
+       // L.show(main_tar);
+       //cout << '\n';
+    }
+    L.show(main_tar);
+//    cout << '\n'; 
+    main_cur=L.delete_all(main_cur);
+//    L.show(main_last);
+//    cout << '\n';
+    return 0;
+}
