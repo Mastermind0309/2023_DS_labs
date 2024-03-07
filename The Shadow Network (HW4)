@@ -1,0 +1,205 @@
+#include <iostream>
+#include<string.h>
+#include <cmath>
+//#include <iomanip>
+#include <stack>
+#define INF 9999
+using namespace std;
+
+struct Node {
+    int id;
+    string place;
+    string name;
+//    Node() : id(0), place(" "), name(" ") {}
+//    ~Node() {}
+};
+
+Node vertex[1005];
+float cost[1005][1005];
+int meg[1005][1005];
+float dist[1005];
+int visit[1005] = { 0 };
+int pre[1005];
+
+void init() {
+    for (int i = 0; i < 1005; i++) {
+        for (int j = 0; j < 1005; j++) {
+            cost[i][j] = INF;
+        }
+        dist[i] = INF;
+        pre[i] = i;
+    }
+}
+
+void check(int idx, int in_src, int in_dest) {
+//   cout << vertex[in_src].place << " " << vertex[in_dest].place << '\n';
+    if (vertex[in_src].place == "SPY" && vertex[in_dest].place == "SPY") {
+        cost[in_src][in_dest] = INF;
+        cost[in_dest][in_src] = INF;
+    }
+    else if ((vertex[in_src].place == "SOURCE" && vertex[in_dest].place == "SPY") || (vertex[in_dest].place == "SOURCE" && vertex[in_src].place == "SPY")) {
+        cost[in_src][in_dest] = INF;
+        cost[in_dest][in_src] = INF;
+    }
+    else if (vertex[in_src].place == "CIV" && vertex[in_dest].place == "HQ" || vertex[in_dest].place == "CIV" && vertex[in_src].place == "HQ") {
+        cost[in_src][in_dest] = INF;
+        cost[in_dest][in_src] = INF;
+    }
+}
+
+/*void show_graph(int idx) {
+    for (int i = 1; i < idx; i++) {
+        for (int j = 1; j < idx; j++) {
+            cout << setw(8) << cost[i][j] << setw(8);
+        }
+        cout << '\n';
+    }
+}*/
+
+int get_near(int idx) {
+    int minval = INF;
+    int min_node = 0;
+    for (int i = 1; i < idx; i++) {
+        if (visit[i] == 0 && dist[i] < minval) {
+            minval = dist[i];
+            min_node = i;
+        }
+    }
+//  cout << min_node << '\n';
+    return min_node;
+}
+
+void dijkstra(int idx, int source_idx) {
+    stack<int> adj_cmp;
+    stack<int> near_cmp;
+    int adj_step, nearest_step;
+    for (int i = 1; i < idx-1; i++) {
+        int nearest = get_near(idx);
+        visit[nearest] = 1;
+        for (int adj = 1; adj < idx; adj++) {
+            if (cost[nearest][adj] != INF && visit[adj] == 0 && dist[adj] >= dist[nearest] + cost[nearest][adj] && adj != nearest) {
+				while(adj_cmp.size() != 0) {
+					adj_cmp.pop();
+				} 
+				while(near_cmp.size() != 0) {
+					near_cmp.pop();
+				} 
+                if (dist[adj] == dist[nearest] + cost[nearest][adj]) {
+                    adj_step = adj;
+                    adj_cmp.push(adj_step);
+                    while (pre[adj_step] != source_idx) {
+                        adj_step = pre[adj_step];
+                        adj_cmp.push(adj_step);
+                    }
+                    adj_cmp.push(source_idx);
+                    nearest_step = nearest;
+                    near_cmp.push(nearest_step);
+                    while (pre[nearest_step] != source_idx) {
+                        nearest_step = pre[nearest_step];
+                        near_cmp.push(nearest_step);
+                    }
+                    near_cmp.push(source_idx);
+                    while (!adj_cmp.empty() && !near_cmp.empty()) {
+                        if (adj_cmp.top() < near_cmp.top()) {
+                            pre[adj] = pre[adj];
+                            break;
+                        }
+                        else if (adj_cmp.top() > near_cmp.top()) {
+                            pre[adj] = nearest;
+                            break;
+                        }
+                        adj_cmp.pop();
+                        near_cmp.pop();
+                    }
+                }
+                else {
+                    dist[adj] = dist[nearest] + cost[nearest][adj];
+                    pre[adj] = nearest;
+                }
+            }
+        }
+    }
+}
+
+void display(int idx, int source_idx) {
+    cout << "Node: " << "Cost:  " << "Path:" << '\n';
+    for (int i = 1; i < idx; i++) {
+        cout << i << "     " << dist[i] << "     ";
+        int last_node = pre[i];
+        while (last_node != source_idx) {
+            cout << "<-" << last_node << " ";
+            last_node = pre[last_node];
+        }
+        cout << '\n';
+    }
+}
+
+void ans(int idx, int source_idx, int hq_idx) {
+    stack<int> route;
+    float d = 0;
+    int m = 0;
+    int last = hq_idx;
+    while (last != source_idx) {
+        route.push(last);
+//      cout << last << "<-";
+        d += cost[last][pre[last]];
+        m += meg[last][pre[last]];
+        last = pre[last];
+    }
+    last = source_idx;
+    route.push(last);
+//   cout << last << '\n';
+    while (!route.empty()) {
+//      cout << route.top() << "("<< vertex[route.top()].name << ")" << "->";
+        if (route.size() != 1) cout << vertex[route.top()].name << " -> ";
+        else cout << vertex[route.top()].name << '\n';
+        route.pop();
+    }
+//  cout << '\n';
+    cout << m << '\n';
+    cout << d << '\n';
+}
+
+int main() {
+    Node newnode;
+    string str;
+    int idx = 1;
+    int in_src, in_dest, message;
+    int source_idx = 0, hq_idx = 0;
+    float distance;
+    init();
+    while (cin >> str) {
+        if (str == "INSERT") {
+            cin >> newnode.place >> newnode.name;;
+            newnode.id = idx;
+            vertex[idx] = newnode;
+            cost[idx][idx] = 0;
+            if (vertex[idx].place == "SOURCE") source_idx = idx;
+            else if (vertex[idx].place == "HQ") hq_idx = idx;
+            idx++;
+        }
+        if (str == "INSERT_EDGE") {
+            cin >> in_src >> in_dest >> message;
+            meg[in_src][in_dest] = message;
+            meg[in_dest][in_src] = message;
+            if (message > 0) {
+                distance = 1000.0 / message;
+                distance = round(distance * 100.0) / 100.0;
+            }
+            else distance = INF;
+//          cout << distance << '\n';
+            cost[in_src][in_dest] = distance;
+            cost[in_dest][in_src] = distance;
+            check(idx, in_src, in_dest);
+        }
+        if (str == "ANALYZE") {
+//          show_graph(idx);
+            dist[source_idx] = 0;
+            dijkstra(idx, source_idx);
+//          display(idx, source_idx);
+            ans(idx, source_idx, hq_idx);
+            break;
+        }
+    }
+    return 0;
+}  
