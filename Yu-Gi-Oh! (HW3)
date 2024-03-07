@@ -1,0 +1,132 @@
+#include <iostream>
+#include<string.h>
+using namespace std;
+
+class Node {
+public:
+    int val;
+    Node* left;
+    Node* right;
+    Node() : val(10), left(NULL), right(NULL) {}
+    Node(int value) : val(value), left(NULL) , right(NULL) {}
+    ~Node() {}
+};
+
+Node* buildtree(Node* root, int num) {
+    if (num <= 8) {
+        Node* newnode = new Node(num);
+        if (num == 7 || num == 8) {
+            if (root->left == NULL || root->right == NULL) return root;
+            newnode->left = root->left;
+            newnode->right = root->right;
+            root->left = newnode;
+            root->right = NULL;
+            return root;
+        }
+        else if (num == 5 || num == 6) {
+            if (root->left == NULL && root->right == NULL) return root;
+            else if (root->left != NULL && root->right == NULL) {
+                newnode->left = root->left;
+                newnode->right = NULL;
+                root->left = newnode;
+                root->right = NULL;
+                return root;
+            }
+            else if (root->left == NULL && root->right != NULL) {
+                newnode->left = NULL;
+                newnode->right = root->right;
+                root->left = NULL;
+                root->right = newnode;
+                return root;
+            }
+            else {
+                if (root->left->val <= root->right->val) {
+                    newnode->left = root->left;
+                    newnode->right = NULL;
+                    root->left = newnode;
+                    return root;
+                }
+                else {
+                    newnode->left = NULL;
+                    newnode->right = root->right;
+                    root->right = newnode;
+                    return root;
+                }
+            }
+        }
+        else {
+            if (root->left == NULL && root->right == NULL) {
+                root->left = newnode;
+                return root;
+            }
+            else if (root->left == NULL && root->right != NULL) {
+                root->left = newnode;
+                return root;
+            }
+            else if (root->left != NULL && root->right == NULL) {
+                root->right = newnode;
+                return root;
+            }
+            else return root;
+        }
+    }
+    else return root;
+}
+
+int add(Node* root) {
+    if (root->left == NULL && root->right == NULL) return 0;
+    else if (root->left != NULL && root->right == NULL) return root->left->val;
+    else if (root->left == NULL && root->right != NULL) return root->right->val;
+    else return root->left->val + root->right->val;
+}
+
+int preorder(Node* root) {
+    static int cnt = 0;
+    if (root == NULL) return cnt;
+    cnt++;
+    preorder(root->left);
+    preorder(root->right);
+}
+
+void print(Node* cur, int node_num) {
+    static int cnt = 0;
+    if (node_num == 1) {    // only root
+        cout << '\n';
+        return;
+    }
+    else {
+        if (cur == NULL) return;
+        else {
+            cnt++;
+            if (cnt == node_num) cout << cur->val << "*" << '\n';   // last node
+            else if (cnt < node_num && cur->val != 10) { // nodes in tree, except root
+                cout << cur->val << "*" << " ";
+            }
+            print(cur->left, node_num);
+            print(cur->right, node_num);
+        }
+    }
+}
+
+int main() {
+    string str, arrow, star;
+    int num, addval=0, node_num;
+    Node* root= new Node();
+    while (cin >> str) {
+        if (str == "TheEnd") break;
+        else if (str == "Summon") {
+            cin >> arrow >> num >> star;
+            root = buildtree(root, num);
+//            node_num = preorder(root);
+//            print(root, node_num);
+        }
+        else if (str == "Attack") {
+            addval += add(root);
+//           cout << addval << '\n';
+        }
+    }
+    node_num = preorder(root);
+    print(root, node_num);
+    cout << addval << '\n'; 
+    return 0;
+}
