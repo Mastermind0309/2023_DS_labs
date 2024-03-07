@@ -1,0 +1,95 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int fruit_num, hf_size, total_node;
+
+struct Fruit {
+    string name;
+    vector<int> hf_val;
+};
+
+struct Node {
+    int hf_idx;
+    double scale;
+    int bin;
+};
+
+struct collect{
+    string f_name;
+    int last_hf_val;
+};
+
+void processNode(vector<Fruit>& f, int f_size, vector<Node>& fn, int now_node , int last_idx, vector<collect>& result) {
+    if (f.size() == 0) {
+        now_node /= 2;
+        return;
+    }
+    else if (f.size() == 1) {
+        struct collect store;
+        store.f_name = f[0].name;
+        store.last_hf_val = f[0].hf_val[last_idx];
+        result.push_back(store);
+//        cout << result.size() << '\n';
+        if (result.size() == fruit_num) {
+            for (int i = 0; i < fruit_num; i++) {
+                cout << result[i].f_name << " " << result[i].last_hf_val << '\n';
+            }
+        }
+        now_node /= 2;
+        return;
+    }
+    else if (now_node > total_node) {
+        now_node /= 2;
+        return;
+    }
+
+    int now_idx = fn[now_node].hf_idx;
+    double now_scale = fn[now_node].scale;
+    int now_bin = fn[now_node].bin;
+    for (int i = 0; i < f_size; i++) {
+        for (int j = 0; j < hf_size; j++) {
+            if (j == now_idx) {
+                f[i].hf_val[j] = (int)((double)f[i].hf_val[j] * now_scale);
+ //               cout << f[i].hf_val[j] << '\n';
+                break;
+            }
+       }
+    }
+
+    vector<Fruit> less;
+    vector<Fruit> more;
+    for (int i = 0; i < f_size; i++) {
+        if (f[i].hf_val[now_idx] < now_bin) {
+            less.push_back(f[i]);
+        }
+        else more.push_back(f[i]);
+    }
+//    cout << less.size()<<" "<<more.size()<<'\n';
+    processNode(less, less.size(), fn, 2 * now_node, now_idx, result);
+    processNode(more, more.size() ,fn, 2 * now_node + 1, now_idx, result);
+}
+
+int main() {
+    vector<Fruit> f;
+    vector<Node> fn;
+    string fruit_name;
+    cin >> fruit_num;
+    cin >> hf_size;
+    f.resize(fruit_num);
+    for (int i = 0; i < fruit_num; i++) {
+        cin >> f[i].name;
+        f[i].hf_val.resize(hf_size);
+        for (int j = 0; j < hf_size; j++) {
+            cin >> f[i].hf_val[j];
+        }
+    }
+    cin >> total_node;
+    fn.resize(total_node + 1);
+    for (int i = 1; i <= total_node; i++) {
+        cin >> fn[i].hf_idx >> fn[i].scale >> fn[i].bin;
+    }
+    vector<collect> result;
+    processNode(f, fruit_num, fn, 1, fn[0].hf_idx,result);
+    return 0;
+}
