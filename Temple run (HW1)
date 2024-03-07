@@ -1,0 +1,169 @@
+#include <iostream>
+#include <string.h>
+using namespace std;
+
+enum order {
+    NONE=0, TL, TR, GOLD, SILVER, KL, KR, JUMP, FILP, MISS
+};
+
+class Stack {
+public:
+    Stack(): idx(0) {
+        memset(s, 0, 110);
+    }
+    ~Stack() {}
+/*    bool Is_empty() {
+        if (idx == 0) return true;
+        else return false;
+    }*/
+    void rev_show() {
+        for (int i = idx-1; i >= 0; i--) {
+            if (s[i] == TL) {
+                if (i == 0) cout << "TR" << '\n';
+                else cout << "TR->";
+            }
+            if (s[i] == TR) {
+                if (i == 0) cout << "TL" << '\n';
+                else cout << "TL->";
+            }
+        }
+    }
+    bool push(string order) {
+        if (order == "TL") {
+            s[idx] = TL;
+            idx++;
+            return true;
+        }
+        if (order == "TR") {
+            s[idx] = TR;
+            idx++;
+            return true;
+        }
+        return false;
+    }
+ /*   bool pop() {
+        if (Is_empty()) {
+            cout << "empty stack!" << '\n';
+            return true;
+        }
+        idx--;
+        return true;
+    }*/
+private:
+    int s[110];
+    int idx;
+};
+
+class Queue {
+public:
+    Queue(): aidx(0), midx(0), skip(0) {
+        memset(aq, 0, 110);
+        memset(mq, 0, 110);
+    }
+    ~Queue() {}
+ /*   bool Is_empty() {
+        if (midx == 0) return true;
+        else return false;
+    }*/
+    void show() {
+        for (int i = 0; i < aidx; i++) {
+            cout << aq[i] << " ";
+            if (i ==  aidx - 1) cout << '\n';
+        }
+        for (int i = 0; i < midx; i++) {
+            cout << mq[i] << " ";
+            if (i == midx - 1) cout << '\n';
+        }
+    }
+    bool all_push(string order) {
+        if (order == "GOLD") {
+            aq[aidx] = GOLD;
+            aidx++;
+        }
+        if (order == "SILVER") {
+            aq[aidx] = SILVER;
+            aidx++;
+        }
+        return false;
+    }
+ /*   bool pop() {
+        if (Is_empty()) {
+            cout << "empty stack!" << '\n';
+            return true;
+        }
+        midx--;
+        return true;
+    }*/
+     bool miss_push(string order) {
+        if (order == "MISS") {
+            skip = 4;
+            return true;
+        }
+        if (order == "GOLD" || order == "SILVER") {
+            if (skip > 0) skip--;
+            else {
+                if (order == "GOLD") {
+                    mq[midx] = GOLD;
+                    midx++;
+                }
+                if (order == "SILVER") {
+                    mq[midx] = SILVER;
+                    midx++;
+                }
+            }
+            return true;
+        }
+        return false;
+    } 
+    int count(int score, int idx, int* q) {
+        int gold = 0, silver = 0;        
+        for (int i = 0; i + 3 <= idx; ) {
+            for (int j = i; j < i + 3; j++) {
+                if (q[j] == GOLD) gold++;
+                if (q[j] == SILVER) silver++;
+            }
+            if (gold + silver == 3) {
+                if (gold == 3) score += 500;
+                if (gold == 2) score += 300;
+                if (gold == 1) score += 150;
+                if (gold == 0) score += 50;
+                gold = 0;
+                silver = 0;
+            }
+            i += 3;
+        }
+        return score;
+    }
+    int all_score(){
+        return count(0, aidx, aq);
+    }
+    int miss_score() {
+        return count(0, midx, mq);
+    }
+private:
+    int aq[110], mq[110];
+    int aidx, midx, skip;
+}; 
+
+int main() {
+    Stack s;
+    Queue q;
+    string order;
+    while (cin >> order) {
+        if (order == "TL" || order == "TR") {
+            s.push(order);
+        }
+//        s.rev_show(); 
+        if (order == "GOLD" || order == "SILVER" || order == "MISS") {
+            q.all_push(order);
+            q.miss_push(order);
+        }
+//        q.show();
+//        cout<< q.all_score() <<'\n';
+//        cout << q.miss_score() << '\n';
+    }
+  	s.rev_show();
+  	cout<< q.miss_score() <<'\n';
+	cout << q.all_score() << '\n';
+    return 0;
+}
