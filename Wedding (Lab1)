@@ -1,0 +1,51 @@
+#include <iostream>
+#include <stack>
+#include <queue>
+#include <string.h>
+using namespace std;
+
+int main() {
+	string rt, name;
+	int time, table, wine, sum=0;
+	int min=10000000, max=-10000000;
+	stack<string> s;
+	queue<int> q;
+	while (cin >> rt) {
+		if (rt == "R") {
+			cin >> name >> time;
+			s.push(name);
+			if (time < min) min = time;
+			if (time > max) max = time;
+		}
+		if (rt == "T") {
+			cin >> table >> wine;
+			q.push(table);
+			sum += wine;
+		}
+/*		for (stack<string> n = s; !n.empty();) {
+			cout << n.top() << " ";
+			n.pop();
+		}
+		cout << '\n';
+		cout << max - min << '\n';
+		for (queue<int> t = q; !t.empty();) {
+			cout << t.front() << " ";
+			t.pop();
+		}
+		cout << '\n';
+		cout << sum << '\n'; */
+	}
+	for (stack<string> n = s; !n.empty();) {
+		cout << n.top() << " ";
+		n.pop();
+	}
+	cout << '\n';
+	cout << max - min << '\n';
+	for (queue<int> t = q; !t.empty();) {
+		cout << t.front() << " ";
+		t.pop();
+	}
+	cout << '\n';
+	cout << sum << '\n'; 
+	return 0;
+}
