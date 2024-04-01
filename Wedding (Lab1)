@@ -22,18 +22,7 @@ int main() {
 			q.push(table);
 			sum += wine;
 		}
-/*		for (stack<string> n = s; !n.empty();) {
-			cout << n.top() << " ";
-			n.pop();
-		}
-		cout << '\n';
-		cout << max - min << '\n';
-		for (queue<int> t = q; !t.empty();) {
-			cout << t.front() << " ";
-			t.pop();
-		}
-		cout << '\n';
-		cout << sum << '\n'; */
+
 	}
 	for (stack<string> n = s; !n.empty();) {
 		cout << n.top() << " ";
